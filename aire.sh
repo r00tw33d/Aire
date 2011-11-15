@@ -15,21 +15,21 @@ export airmonNg=`which airmon-ng`
 export aireplayNg=`aireplay-ng`
 
 function validar_dependencias {
-	echo -e ${yellow}Validando dependencias.${END}
+	echo -e "${yellow}Validando dependencias.${END}"
 	num_error=0
 	
 	if [ ${macchanger} = '' ]; then
-		echo -e ${red}Es necesario instalar ${macchanger}macchanger${END}
+		echo -e "${red}Es necesario instalar ${macchanger}macchanger${END}"
 		let num_error=$num_error+1
 	fi
 	if [ ${airmonNg} = '' ]; then
-		echo -e ${red}Es necesario instalar la suite air-crack${END}
+		echo -e "${red}Es necesario instalar la suite air-crack${END}"
 		let num_error=$num_error+1
 	fi
 	if [ ${num_error} -eq 0 ]; then
-		echo Dependencias cumplidas
+		echo "Dependencias cumplidas"
 	else
-        echo -e ${red}Numero de dependencias con errores ${num_error} .${END}
+        echo -e "${red}Numero de dependencias con errores ${num_error} .${END}"
         exit ${num_error}
 	fi
 }
@@ -51,9 +51,9 @@ function select_interface {
         echo Buscando alternativas...
         INTERFACES=`iwconfig 2>&1 | grep 802.11 | wc -l`
         if [ "$INTERFACES" -gt 1 ]; then
-                echo -e ${white}Especifike un número de la lista:
+                echo -e "${white}Especifike un número de la lista:"
                 iwconfig 2>&1 | grep 802.11 | awk '{print "\t"NR ") " $1}'
-                echo -e ${END}
+                echo -e "${END}"
                 read IFACEID
 		REALIFACE=`iwconfig 2>&1 | grep 802.11 | awk '{print $1}' | head -n$IFACEID | tail -n1`
                 if [ -z "$REALIFACE" ]; then
@@ -71,7 +71,7 @@ validar_dependencias
 
 # Verificando interfaz de red
 if [ -z "$1" ]; then
-        echo -e ${red}No se proporcionó interfaz de red.${END}
+        echo -e "${red}No se proporcionó interfaz de red.${END}"
         select_interface
 else
 	probe_interface $1
@@ -88,7 +88,7 @@ if [ "$(id -u)" -eq 0 ]; then
         # Verificando interfaz en modo Monitor
         PROBE=`iwconfig 2>&1 | cat - | grep Monitor`
         if [ -z "$PROBE" ]; then
-                echo -e ${cyan}Levantando interfaz modo Monitor...${END}
+                echo -e "${cyan}Levantando interfaz modo Monitor...${END}"
                 IFACE=`airmon-ng start $INTERFAZ | tail -n2 | awk '{print $5}' | sed s/\).*//g`
         else
                 IFACE=`echo $PROBE | cut -d " " -f1`
@@ -179,12 +179,12 @@ if [ "$(id -u)" -eq 0 ]; then
         if [ $RES = 'y' ]; then
                 rm aire-tmp-* replay_arp*.cap cracken.tmp
         fi
-        echo -e ${red}Matando procesos ${END}${yellow}=)${red} ...${END}
+        echo -e "${red}Matando procesos ${END}${yellow}=)${red} ...${END}"
 	killall xterm
-        echo -e ${red}Terminando la interfaz en modo promiscuo${END}
+        echo -e "${red}Terminando la interfaz en modo promiscuo${END}"
         airmon-ng stop $IFACE
-        echo ${yellow}Travesura realizada. xD${END}
+        echo "${yellow}Travesura realizada. xD${END}"
 else
-        echo -e ${red}Eres r00t?${END}
-        echo por favor use: ${0} como usuario root
+        echo -e "${red}Eres r00t?${END}"
+        echo "por favor use: ${0} como usuario root"
 fi

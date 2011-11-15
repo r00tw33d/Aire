@@ -1,0 +1,7 @@
+#ignorando el archivo de informacion dnd almacenamos la info
+.info
+.target
+#ignorando archivos temporales
+aire-tmp*
+#ignorando los archivos temporales que me genera el VIM
+*~
