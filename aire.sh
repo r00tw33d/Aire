@@ -14,7 +14,8 @@ export macchanger=`which macchanger`
 export aircrackNg=`which aircrack-ng`
 
 ##Extraemos el directorio base donde se localiza el aire.sh
-export AIRE_BASE_PATH=`echo $(readlink -f $0) | sed "s/\/aire.sh$//"`;
+export AIRE_BASE_PATH=`echo $(readlink -f $0) | xargs dirname`;
+
 #Cargamos el archivo de las librerias donde tenemos definidas las funciones a usar.
 source $AIRE_BASE_PATH/src/colors_vars.sh #libreria de las definiciones de los colores
 source $AIRE_BASE_PATH/src/stdOutFunctions.sh #libreria de las funciones de la salida estandar
