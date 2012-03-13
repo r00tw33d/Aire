@@ -46,6 +46,11 @@ function probe_interface {
 	fi
 }
 
+function mostrarCeldas {
+    #Genera el contenido de las celdas.
+    `iwlist $1 scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $2`
+    cat $2
+}
 function select_interface {
         echo Buscando alternativas...
         INTERFACES=`iwconfig 2>&1 | grep 802.11 | wc -l`
@@ -123,7 +128,8 @@ if [ "$(id -g)" -eq 0 ]; then
         # Generamos los archivos temporales a usar
         infoPath=`mktemp -t aire_info-XXX`
         targetPath=`mktemp -t aire_target-XXX`
-        iwlist $INTERFAZ scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $infoPath
+        #
+        mostrarCeldas $INTERFAZ $infoPath
         cat $infoPath
         echo -n $'\nNumero de Célula [XX]: '
         read CELL

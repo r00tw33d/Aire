@@ -37,14 +37,18 @@ function mostrarCeldas ()
 				export channel=`echo -e "$line" | sed 's/Channel://'`;
 				;;
 			'quality')
-				export q_range=`echo -e "$line" | sed 's/Quality=//'`;
+				range=`echo -e "$line" | grep -oE '[0-9]+\/[0-9]+'`;
+				val_quality_range=`echo -e "$range" | cut -d/ -f1`;
+				val_quality=`echo -e "$range" | cut -d/ -f2`;
+				val_quality_diff=`expr $val_quality_range - $val_quality`;
+				#Generamos una secuencia de espacios
+				printf -v style_quality "%${val_quality_range}s" ' '
+				printf -v style_quality_diff "%${val_quality_diff}s" ' '
 				;;
 			'essid')
 				export essid=`echo -e "$line" | sed 's/ESSID://'`;
-				export q_range='        ';
-				export q_range2='        ';
-				echo -e "\n${On_IRed}${cell}${Color_Off}\t${BWhite}$essid${Color_Off}"
-				echo -e "\tCalidad: ${On_Blue}${q_range}${On_Green}${q_range2}${Color_Off}";
+				echo -e "\n${On_IRed}${cell}${Color_Off}\tESSID:${BWhite}$essid${Color_Off}"
+				echo -e "\tCalidad: ${On_Blue}${style_quality}${On_Green}${style_quality_diff}${Color_Off}";
 				echo -e "\t${Purple}Canal: $channel${Color_Off} ${Blue}MAC: ${mac}${Color_Off}";
 				;;
 		esac
