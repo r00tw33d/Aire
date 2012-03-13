@@ -120,19 +120,22 @@ if [ "$(id -g)" -eq 0 ]; then
         fi
 
 	echo "Escaneando las redes Wi-Fi..."
-        iwlist $INTERFAZ scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > .info
-        cat .info
+        # Generamos los archivos temporales a usar
+        infoPath=`mktemp /tmp/aire_info.XXXXXXXXXX`
+        targetPath=`mktemp /tmp/aire_target.XXXXXXXXXX`
+        iwlist $INTERFAZ scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $infoPath
+        cat $infoPath
         echo -n $'\nNumero de Célula [XX]: '
         read CELL
         echo 'Preparando el atake...'
         # Se calcula ke informacion corresponde a la celula
         let HEAD=CELL*4
-        cat .info | head -n$HEAD | tail -n4 > .target
+        cat $infoPath | head -n$HEAD | tail -n4 > $targetPath
         # Se extraen los datos del target
-        BSSID=`cat .target | grep Address | awk '{print $5}'`
-        CHANNEL=`cat .target | grep Channel | sed s/.*://g`
-        ESSID=`cat .target | grep ESSID | sed s/.*://g | sed s/\"//g`
-	rm .info .target
+        BSSID=`cat $targetPath | grep Address | awk '{print $5}'`
+        CHANNEL=`cat $targetPath | grep Channel | sed s/.*://g`
+        ESSID=`cat $targetPath | grep ESSID | sed s/.*://g | sed s/\"//g`
+	rm $infoPath $targetPath
         echo 'Comenzando el almacenamiento de IVs en el canal $CHANNEL para\n$ESSID [$BSSID]'
 
 	# sub-shell para la captura de IVs
