@@ -121,8 +121,8 @@ if [ "$(id -g)" -eq 0 ]; then
 
 	echo "Escaneando las redes Wi-Fi..."
         # Generamos los archivos temporales a usar
-        infoPath=`mktemp /tmp/aire_info.XXXXXXXXXX`
-        targetPath=`mktemp /tmp/aire_target.XXXXXXXXXX`
+        infoPath=`mktemp -t aire_info-XXX`
+        targetPath=`mktemp -t aire_target-XXX`
         iwlist $INTERFAZ scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $infoPath
         cat $infoPath
         echo -n $'\nNumero de Célula [XX]: '
