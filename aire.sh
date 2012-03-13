@@ -13,6 +13,12 @@ END='\e[0m'
 export macchanger=`which macchanger`
 export aircrackNg=`which aircrack-ng`
 
+##Extraemos el directorio base donde se localiza el aire.sh
+export AIRE_BASE_PATH=`echo $(readlink -f $0) | sed "s/\/aire.sh$//"`;
+#Cargamos el archivo de las librerias donde tenemos definidas las funciones a usar.
+source $AIRE_BASE_PATH/src/colors_vars.sh #libreria de las definiciones de los colores
+source $AIRE_BASE_PATH/src/stdOutFunctions.sh #libreria de las funciones de la salida estandar
+
 function validar_dependencias {
 	echo -e "${yellow}Validando dependencias.${END}"
 	num_error=0
@@ -46,11 +52,7 @@ function probe_interface {
 	fi
 }
 
-function mostrarCeldas {
-    #Genera el contenido de las celdas.
-    `iwlist $1 scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $2`
-    cat $2
-}
+
 function select_interface {
         echo Buscando alternativas...
         INTERFACES=`iwconfig 2>&1 | grep 802.11 | wc -l`
@@ -129,8 +131,7 @@ if [ "$(id -g)" -eq 0 ]; then
         infoPath=`mktemp -t aire_info-XXX`
         targetPath=`mktemp -t aire_target-XXX`
         #
-        mostrarCeldas $INTERFAZ $infoPath
-        cat $infoPath
+        mostrarObjetivos $INTERFAZ $infoPath
         echo -n $'\nNumero de Célula [XX]: '
         read CELL
         echo 'Preparando el atake...'

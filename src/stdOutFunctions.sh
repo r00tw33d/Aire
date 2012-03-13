@@ -1,21 +1,14 @@
 #!/bin/bash
-#Este archivo solamente es un ejemplo donde pondremos la salida que desamos para la parte donde se pide el objetivo
-#Modificar a su gusto!.
+#Se encarga de administrar la salida estandar.
 
-#configurar.
-INTERFAZ='wlan0';
-infoPath='tmp_file';
-
-#Cargamos el archivo donde guardamos las variables que contienen la info de los colores.
-source colors_vars.sh 
 ############################################################
-# Descripción de la función
+# Enlista los objetivos y pregunta por uno de ellos
 #
 # @argumen $1 interfaz de red.
 # @argumen $2 ruta del archivo temporal.
 # @link http://en.wikipedia.org/wiki/ANSI_escape_code
 ############################################################
-function mostrarCeldas ()
+function mostrarObjetivos ()
 {
     echo -e "${On_IBlack}Seleccione un objetivo${Color_Off}";
     `iwlist $1 scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $2`
@@ -93,4 +86,3 @@ function _mostrarCeldasNumLinea() {
         fi
 }
 
-mostrarCeldas $INTERFAZ $infoPath;
