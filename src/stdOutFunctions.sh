@@ -10,8 +10,9 @@
 ############################################################
 function mostrarObjetivos ()
 {
-    echo -e "${On_IBlack}Seleccione un objetivo${Color_Off}";
+    limpiar
     `iwlist $1 scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $2`
+    echo -e "${On_IBlack}Seleccione un objetivo${Color_Off}";
     export cell='';
     export mac='';
     export channel='';
@@ -86,3 +87,12 @@ function _mostrarCeldasNumLinea() {
         fi
 }
 
+
+############################################################
+# Limpia la pantalla y setea las variables a utilizar
+#
+# @return void
+############################################################
+function limpiar() {
+	clear
+}
