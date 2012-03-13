@@ -1,13 +1,19 @@
 #!/bin/bash
+#Este archivo solamente es un ejemplo donde pondremos la salida que desamos para la parte donde se pide el objetivo
+#Modificar a su gusto!.
 
+#configurar.
+INTERFAZ='wlan0';
+infoPath='tmp_file';
+
+#Cargamos el archivo donde guardamos las variables que contienen la info de los colores.
 source colors_vars.sh 
 ############################################################
 # Descripción de la función
 #
 # @argumen $1 interfaz de red.
 # @argumen $2 ruta del archivo temporal.
-# @return tipo descripcion de lo que regresa
-# @link [URL de mayor infor]
+# @link http://en.wikipedia.org/wiki/ANSI_escape_code
 ############################################################
 function mostrarCeldas ()
 {
@@ -47,11 +53,10 @@ function mostrarCeldas ()
 }
 
 ############################################################
-# Descripción de la función
+# Regresa un str que indica el tipo de linea que le fue pasado
 #
 # @argumen $1 Recibe la linea.
-# @return tipo descripcion de lo que regresa
-# @link [URL de mayor infor]
+# @return regresa cell/channel/quality/essid segun la linea recibida
 ############################################################
 function _mostrarCeldasNumLinea() {
 	##Case firts line, example:
@@ -83,8 +88,5 @@ function _mostrarCeldasNumLinea() {
 			echo 'essid';
         fi
 }
-
-INTERFAZ='wlan0';
-infoPath='tmp_file';
 
 mostrarCeldas $INTERFAZ $infoPath;
