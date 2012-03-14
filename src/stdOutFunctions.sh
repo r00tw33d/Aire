@@ -1,5 +1,9 @@
 #!/bin/bash
-#Utilerias para administrar la salida estandar
+# Utilerias para administrar la salida estandar
+#
+# @author: fitorec
+# @Description: Utilerias para administrar la salida estandar
+# @link http://r00tw33d.github.com/Aire
 
 ############################################################
 # Devuelve el mensaje traducido, a partir de las variables
@@ -8,10 +12,8 @@
 # @argumen $1 Printf format
 # @argumen $2 El mensaje a traducir
 # @return tipo descripcion de lo que regresa
-# @link [URL de mayor infor]
+# @link http://r00tw33d.github.com/Aire
 ############################################################
-#locate "${On_IBlack}%s $1${Color_Off}" "traslate format"
-#		printf
 function locate() {
 	local result=''
 	local msg_file="${AIRE_BASE_PATH}/src/locale/${AIRE_LANG}/aire_msg.po";
@@ -97,7 +99,7 @@ function mostrarObjetivos () {
 # Selecciona una interfaz de red que soporte 802.11,
 # de haber mas de una, las muestras en un menu  como opciones
 #
-# @link [URL de mayor infor]
+# @link http://r00tw33d.github.com/Aire
 ############################################################
 function select_interface() {
 	local NUM_INTERFACES=`iwconfig 2>&1 | grep 802.11 | grep -v 'Mode:Monitor' | wc -l`
@@ -120,12 +122,12 @@ function select_interface() {
 ############################################################
 # Imprime en el inicio un logo de Aire de forma aletaoria
 #
-# @link [URL de mayor infor]
+# @link http://r00tw33d.github.com/Aire
 ############################################################
 function initDisplay() {
 	clear
-	local template=`ls ${AIRE_BASE_PATH}/src/init_displays/ | sort -R | head -1`
+	local template=`ls "${AIRE_BASE_PATH}/src/init_displays/" | sort -R | head -1`
 	echo -e "${Cyan}\c";
-	cat ${AIRE_BASE_PATH}/src/init_displays/${template};
+	cat "${AIRE_BASE_PATH}/src/init_displays/${template}";
 	echo -e  "${Color_Off}";
 }

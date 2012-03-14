@@ -1,6 +1,9 @@
 #!/bin/bash
+# Automatiza los ataques WEP
+#
 # @filename: aire
 # @author: r00tw33d
+# @link http://r00tw33d.github.com/Aire
 
 #Lista de comandos a utilizar(y validar)
 export macchanger=`which macchanger`
@@ -12,11 +15,18 @@ export AIRE_LANG='en';
 export AIRE_BASE_PATH=`echo $(readlink -f $0) | xargs dirname`;
 
 #Cargamos el archivo de las librerias donde tenemos definidas las funciones a usar.
-source $AIRE_BASE_PATH/src/colors_vars.sh #libreria de las definiciones de los colores
-source $AIRE_BASE_PATH/src/stdOutFunctions.sh #libreria de las funciones de la salida estandar
+source "$AIRE_BASE_PATH/src/colors_vars.sh" #libreria de las definiciones de los colores
+source "$AIRE_BASE_PATH/src/stdOutFunctions.sh" #libreria de las funciones de la salida estandar
 
 initDisplay;
 
+############################################################
+# Valida las dependencias
+#
+# @argumen $1 descripción del argumento 1.
+# @return tipo descripcion de lo que regresa
+# @link http://r00tw33d.github.com/Aire
+############################################################
 function validar_dependencias {
 	echo -e "${Yellow}Validando dependencias.${Color_Off}"
 	num_error=0
@@ -37,12 +47,26 @@ function validar_dependencias {
 	fi
 }
 
+############################################################
+# Muestra el modo de uso adecuado
+#
+# @argumen $1 descripción del argumento 1.
+# @return tipo descripcion de lo que regresa
+# @link http://r00tw33d.github.com/Aire
+############################################################
 function usage {
 	echo $'\n\tUso:' $0 '<interface> [ MA:CA:DD:RE:SS | --dont-fake ]'
 	echo $'\ti.e.\n\t\t ' $0 $'wlan0 --dont-fake\n'
 	echo $'\tor\t\t' $0 $'wlan0\n'
 }
 
+############################################################
+# Prueba que la interfaz exista
+#
+# @argumen $1 descripción del argumento 1.
+# @return tipo descripcion de lo que regresa
+# @link http://r00tw33d.github.com/Aire
+############################################################
 function probe_interface {
 	if [ -z "`iwconfig 2>&1 | grep -E "^$1\s+\w*\s+802\.11\w+\s+\w+"`" ]; then
 		echo -e "${Red}Se ha insertado una interfaz invalida${Color_Off}"
@@ -56,7 +80,7 @@ function probe_interface {
 #
 # @argumen $1 descripción del argumento 1.
 # @return tipo descripcion de lo que regresa
-# @link [URL de mayor infor]
+# @link http://r00tw33d.github.com/Aire
 ############################################################
 function config_mac_address() {
 	local fabricante="desconocido"
@@ -89,7 +113,6 @@ function config_mac_address() {
 	echo -e "${BCyan}Direccion MAC ${On_IPurple}${NEWMAC}${BCyan}\nFabricante ${On_IPurple}${fabricante}${Color_Off}"
 }
 ############################# aqui empieza la secuencia del guion ########################
-#valiaciones previas.
 validar_dependencias
 
 # Verificando interfaz de red
