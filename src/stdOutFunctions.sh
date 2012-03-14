@@ -8,10 +8,26 @@
 # @argumen $2 ruta del archivo temporal.
 # @link http://en.wikipedia.org/wiki/ANSI_escape_code
 ############################################################
-function mostrarObjetivos ()
-{
-    limpiar
-    `iwlist $1 scann 2>&1  | grep -E Cell\|Quality\|ESSID\|Channel: > $2`
+
+function mostrarObjetivos () {
+	echo "revisando targeta $1"
+    iwlist $1 scann 2>&1 | grep -E Cell\|Quality\|ESSID\|Channel: > $2
+    if [ $? -gt 1 ]
+	then
+		case "$?" in
+			"254")
+				echo -e "\n${On_IRed}Levantando targeta de red ${$1}${Color_Off}"
+				ifconfig $1 up
+				mostrarObjetivos $1 $2
+				return 0;
+				;;
+			 "*")
+				echo -e "\n${On_IRed}Error desconocido al ejecutar iwlist $1 scann 2>&1${Color_Off}"
+				exit 1;
+				;;
+		esac
+	fi
+	limpiar
     echo -e "${On_IBlack}Seleccione un objetivo${Color_Off}";
     export cell='';
     export mac='';
@@ -56,7 +72,8 @@ function mostrarObjetivos ()
 # @argumen $1 Recibe la linea.
 # @return regresa cell/channel/quality/essid segun la linea recibida
 ############################################################
-function _mostrarCeldasNumLinea() {
+function _mostrarCeldasNumLinea()
+{
 	##Case firts line, example:
 	#Cell 01 - Address: AA:BB:CC:DD:FF:00
 	   echo -e "$line" | grep  -qE '^Cell\s+'
@@ -87,12 +104,36 @@ function _mostrarCeldasNumLinea() {
         fi
 }
 
+############################################################
+# Selecciona una interfaz de red que soporte 802.11,
+# de haber mas de una, las muestras en un menu  como opciones
+#
+# @link [URL de mayor infor]
+############################################################
+function select_interface() {
+	local NUM_INTERFACES=`iwconfig 2>&1 | grep 802.11 | grep -v 'Mode:Monitor' | wc -l`
+	if [ "$NUM_INTERFACES" -gt 1 ]; then
+		echo -e "${white}Especifike un número de la lista:"
+		select INTERFAZ in `iwconfig 2>&1 | grep 802.11 | grep -v 'Mode:Monitor' | grep -oE "^\w*"`; do
+			if [ $INTERFAZ ]; then
+				break;
+			else
+				clear
+				echo -e "${red}Especifike una interfaz valida:${END}${white}"
+			fi
+		done #end select
+	else
+		INTERFAZ=`iwconfig 2>&1 | grep 802.11 | grep -oE "^\w*" | head -1`
+	fi
+	echo -e ${END}
+}
 
 ############################################################
 # Limpia la pantalla y setea las variables a utilizar
 #
 # @return void
 ############################################################
-function limpiar() {
+function limpiar()
+{
 	clear
 }
