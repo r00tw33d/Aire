@@ -1,5 +1,33 @@
 #!/bin/bash
-#Se encarga de administrar la salida estandar.
+#Utilerias para administrar la salida estandar
+
+############################################################
+# Devuelve el mensaje traducido, a partir de las variables
+# previamente configuradas:  AIRE_BASE_PATH y AIRE_LANG
+#
+# @argumen $1 Printf format
+# @argumen $2 El mensaje a traducir
+# @return tipo descripcion de lo que regresa
+# @link [URL de mayor infor]
+############################################################
+#locate "${On_IBlack}%s $1${Color_Off}" "traslate format"
+#		printf
+function locate() {
+	local result=''
+	local msg_file="${AIRE_BASE_PATH}/src/locale/${AIRE_LANG}/aire_msg.po";
+	local line_msgid=`cat $msg_file | grep -En --color "^msgid\s+\"$2\"$" | cut -d: -f1`;
+
+	if [ "$?" -eq 0 ]; then
+		local next_line_msgid=`expr ${line_msgid} + 1`;
+		result=`cat ${msg_file} | head -${next_line_msgid} | tail -1 | grep -Eo '".*"' | sed -r 's/^.(.*)./\1/'`
+	fi
+	if [ "${result}" = "" ]; then
+		printf "${1}" "$2"
+		return 1;
+	fi
+	printf "${1}" "${result}"
+	return 0;
+}
 
 ############################################################
 # Enlista los objetivos y pregunta por uno de ellos
@@ -8,45 +36,44 @@
 # @argumen $2 ruta del archivo temporal.
 # @link http://en.wikipedia.org/wiki/ANSI_escape_code
 ############################################################
-
 function mostrarObjetivos () {
-	echo "revisando targeta $1"
+	local cell='';
+    local mac='';
+    local channel='';
+    local quality='';
+    local essid='';
+
+	locate "${On_IBlack}%s $1${Color_Off}" "Revisando targeta";
     iwlist $1 scann 2>&1 | grep -E Cell\|Quality\|ESSID\|Channel: > $2
     if [ $? -gt 1 ]
 	then
 		case "$?" in
 			"254")
-				echo -e "\n${On_IRed}Levantando targeta de red ${$1}${Color_Off}"
+				locate "\n${On_IRed}%s ${$1}${Color_Off}" "Levantando targeta de red"
 				ifconfig $1 up
 				mostrarObjetivos $1 $2
 				return 0;
 				;;
 			 "*")
-				echo -e "\n${On_IRed}Error desconocido al ejecutar iwlist $1 scann 2>&1${Color_Off}"
+				locate "\n${On_IRed}%s iwlist $1 scann 2>&1${Color_Off}" "Error desconocido al ejecutar:";
 				exit 1;
 				;;
 		esac
 	fi
-	limpiar
-    echo -e "${On_IBlack}Seleccione un objetivo${Color_Off}";
-    export cell='';
-    export mac='';
-    export channel='';
-    export quality='';
-    export essid='';
-    
+	initDisplay
+    locate "${On_IBlack}%s${Color_Off}" "Seleccione un objetivo";
     while read line
 	do
-		tipoDeLinea=`_mostrarCeldasNumLinea "${line}"`
+		local tipoDeLinea=`echo "${line}" | grep -Eo Cell\|Quality\|ESSID\|Channel`
 		case "$tipoDeLinea" in
-			'cell')
-				export cell=`echo -e "$line" | grep  -oiE '^Cell\s[0-9]+' | sed 's/Cell\s//'`;
-				export mac=`echo -e "$line" | grep  -oiE '[0-f:]+$'`;
+			'Cell')
+				cell=`echo -e "$line" | grep  -oiE '^Cell\s[0-9]+' | sed 's/Cell\s//'`;
+				mac=`echo -e "$line" | grep  -oiE '[0-f:]+$'`;
 				;;
-			'channel')
-				export channel=`echo -e "$line" | sed 's/Channel://'`;
+			'Channel')
+				channel=`echo -e "$line" | sed 's/Channel://'`;
 				;;
-			'quality')
+			'Quality')
 				range=`echo -e "$line" | grep -oE '[0-9]+\/[0-9]+'`;
 				val_quality_range=`echo -e "$range" | cut -d/ -f1`;
 				val_quality=`echo -e "$range" | cut -d/ -f2`;
@@ -55,53 +82,15 @@ function mostrarObjetivos () {
 				printf -v style_quality "%${val_quality_range}s" ' '
 				printf -v style_quality_diff "%${val_quality_diff}s" ' '
 				;;
-			'essid')
-				export essid=`echo -e "$line" | sed 's/ESSID://'`;
+			'ESSID')
+				essid=`echo -e "$line" | sed 's/ESSID://'`;
 				echo -e "\n${On_IRed}${cell}${Color_Off}\tESSID:${BWhite}$essid${Color_Off}"
-				echo -e "\tCalidad: ${On_Blue}${style_quality}${On_Green}${style_quality_diff}${Color_Off}";
-				echo -e "\t${Purple}Canal: $channel${Color_Off} ${Blue}MAC: ${mac}${Color_Off}";
+				locate "\n\t%s ${On_Blue}${style_quality}${On_Green}${style_quality_diff}${Color_Off}" "Calidad:";
+				locate "\n\t${Purple}%s $channel${Color_Off} ${Blue}MAC: ${mac}${Color_Off}" "Canal:";
 				;;
 		esac
 	done < $2
-	echo -e "\n${BCyan}Inserte el número de un objetivo [XX]: ${Color_Off}";
-}
-
-############################################################
-# Regresa un str que indica el tipo de linea que le fue pasado
-#
-# @argumen $1 Recibe la linea.
-# @return regresa cell/channel/quality/essid segun la linea recibida
-############################################################
-function _mostrarCeldasNumLinea()
-{
-	##Case firts line, example:
-	#Cell 01 - Address: AA:BB:CC:DD:FF:00
-	   echo -e "$line" | grep  -qE '^Cell\s+'
-	   if [ $? -eq 0 ];
-		then
-			echo 'cell';
-        fi
-	##Case second line, example:
-	#Channel:7
-	   echo -e "$line" | grep  -qE '^Channel:'
-	   if [ $? -eq 0 ];
-		then
-			echo 'channel';
-        fi
-	##Case three line, example:
-	#Quality=26/70  Signal level=-84 dBm
-	   echo -e "$line" | grep  -qE '^Quality'
-	   if [ $? -eq 0 ];
-		then
-			echo 'quality';
-        fi
-	##Case four line
-	#ESSID:"myNetWorking"
-	   echo -e "$line" | grep  -qE '^ESSID:'
-	   if [ $? -eq 0 ];
-		then
-			echo 'essid';
-        fi
+	locate "\n${BCyan}%s [XX]:${Color_Off}" "Inserte el número de un objetivo"
 }
 
 ############################################################
@@ -112,28 +101,31 @@ function _mostrarCeldasNumLinea()
 ############################################################
 function select_interface() {
 	local NUM_INTERFACES=`iwconfig 2>&1 | grep 802.11 | grep -v 'Mode:Monitor' | wc -l`
+
 	if [ "$NUM_INTERFACES" -gt 1 ]; then
-		echo -e "${white}Especifike un número de la lista:"
+		locate "${White}%s"  "Especifike un número de la lista:"
 		select INTERFAZ in `iwconfig 2>&1 | grep 802.11 | grep -v 'Mode:Monitor' | grep -oE "^\w*"`; do
 			if [ $INTERFAZ ]; then
 				break;
 			else
 				clear
-				echo -e "${red}Especifike una interfaz valida:${END}${white}"
+				locate "${Red}%s${Color_Off}${White}" "Especifike una interfaz valida:"
 			fi
 		done #end select
 	else
 		INTERFAZ=`iwconfig 2>&1 | grep 802.11 | grep -oE "^\w*" | head -1`
 	fi
-	echo -e ${END}
+	echo -e ${Color_Off}
 }
-
 ############################################################
-# Limpia la pantalla y setea las variables a utilizar
+# Imprime en el inicio un logo de Aire de forma aletaoria
 #
-# @return void
+# @link [URL de mayor infor]
 ############################################################
-function limpiar()
-{
+function initDisplay() {
 	clear
+	local template=`ls ${AIRE_BASE_PATH}/src/init_displays/ | sort -R | head -1`
+	echo -e "${Cyan}\c";
+	cat ${AIRE_BASE_PATH}/src/init_displays/${template};
+	echo -e  "${Color_Off}";
 }

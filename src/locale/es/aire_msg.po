@@ -1,0 +1,11 @@
+# Spanish Translation
+# Copyright (C) 2010 - Aire (tm)
+# Created by DiaPO - V 0.01
+# Developed by fitorec -  <chanerec@gmail.com> 2010.
+# Filename: src/locate/es/aire_msg.po
+# Last-Modifield:
+
+#Login access.
+msgid "Validando dependencias"
+msgstr "Validando dependencias"
+

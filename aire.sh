@@ -2,17 +2,12 @@
 # @filename: aire
 # @author: r00tw33d
 
-#definicion de los colores para mostrar la consola
-cyan='\e[0;36m'
-light='\e[1;36m'
-red="\e[0;31m"
-yellow="\e[0;33m"
-white="\e[0;37m"
-END='\e[0m'
 #Lista de comandos a utilizar(y validar)
 export macchanger=`which macchanger`
 export aircrackNg=`which aircrack-ng`
 
+#Idioma de la interfaz
+export AIRE_LANG='en';
 ##Extraemos el directorio base donde se localiza el aire.sh
 export AIRE_BASE_PATH=`echo $(readlink -f $0) | xargs dirname`;
 
@@ -20,22 +15,24 @@ export AIRE_BASE_PATH=`echo $(readlink -f $0) | xargs dirname`;
 source $AIRE_BASE_PATH/src/colors_vars.sh #libreria de las definiciones de los colores
 source $AIRE_BASE_PATH/src/stdOutFunctions.sh #libreria de las funciones de la salida estandar
 
+initDisplay;
+
 function validar_dependencias {
-	echo -e "${yellow}Validando dependencias.${END}"
+	echo -e "${Yellow}Validando dependencias.${Color_Off}"
 	num_error=0
 	
 	if [ ${macchanger} = '' ]; then
-		echo -e "${red}Es necesario instalar ${macchanger}macchanger${END}"
+		echo -e "${Red}Es necesario instalar ${macchanger}macchanger${Color_Off}"
 		let num_error=$num_error+1
 	fi
 	if [ ${aircrackNg} = '' ]; then
-		echo -e "${red}Es necesario instalar la suite air-crack${END}"
+		echo -e "${Red}Es necesario instalar la suite air-crack${Color_Off}"
 		let num_error=$num_error+1
 	fi
 	if [ ${num_error} -eq 0 ]; then
 		echo "Dependencias cumplidas"
 	else
-        echo -e "${red}Numero de dependencias con errores ${num_error} .${END}"
+        echo -e "${Red}Numero de dependencias con errores ${num_error} .${Color_Off}"
         exit ${num_error}
 	fi
 }
@@ -48,7 +45,7 @@ function usage {
 
 function probe_interface {
 	if [ -z "`iwconfig 2>&1 | grep -E "^$1\s+\w*\s+802\.11\w+\s+\w+"`" ]; then
-		echo -e "${red}Se ha insertado una interfaz invalida${END}"
+		echo -e "${Red}Se ha insertado una interfaz invalida${Color_Off}"
 		exit 2
 	fi
 }
@@ -97,7 +94,7 @@ validar_dependencias
 
 # Verificando interfaz de red
 if [ -z "$1" ]; then
-        echo -e "${red}No se proporcionó interfaz de red.${END}"
+        echo -e "${Red}No se proporcionó interfaz de red.${Color_Off}"
         select_interface
 else
 	probe_interface $1
@@ -114,14 +111,14 @@ if [ "$(id -g)" -eq 0 ]; then
 	# Verificando interfaz en modo Monitor
 	IFACE=`iwconfig 2>&1 | cat - | grep Monitor | head -1 | grep -Eo "^\w+"`
 	if [ -z "${IFACE}" ]; then
-		echo -e "${cyan}Levantando interfaz modo Monitor...${END}"
+		echo -e "${Cyan}Levantando interfaz modo Monitor...${Color_Off}"
 		IFACE=`airmon-ng start ${INTERFAZ} | tail -n2 | grep -oE '^\w*'`
 	fi
 	echo ${IFACE} '... interfaz configurada.'
 
 	#configuramos nuestra direccion MAC
 	config_mac_address "$2"
-	echo -e "Esperando 2 segundos\c" && sleep 1 && echo -e ".\c" && sleep 1 && echo -e ".\c" && sleep 1 && echo "."
+	#echo -e "Esperando 2 segundos\c" && sleep 1 && echo -e ".\c" && sleep 1 && echo -e ".\c" && sleep 1 && echo "."
 
 	echo "Escaneando las redes Wi-Fi..."
         # Generamos los archivos temporales a usar
@@ -129,7 +126,6 @@ if [ "$(id -g)" -eq 0 ]; then
         targetPath=`mktemp -t aire_target-XXX`
         #
         mostrarObjetivos "${INTERFAZ}" "$infoPath"
-        echo -n $'\nNumero de Célula [XX]: '
         read CELL
         echo 'Preparando el atake...'
         # Se calcula ke informacion corresponde a la celula
@@ -186,12 +182,12 @@ if [ "$(id -g)" -eq 0 ]; then
         if [ $RES = 'y' ]; then
                 rm aire-tmp-* replay_arp*.cap cracken.tmp
         fi
-        echo -e "${red}Matando procesos ${END}"
+        echo -e "${Red}Matando procesos ${Color_Off}"
         killall xterm
-        echo -e "${red}Terminando la interfaz en modo promiscuo${END}"
+        echo -e "${Red}Terminando la interfaz en modo promiscuo${Color_Off}"
         airmon-ng stop ${IFACE}
-        echo "${yellow}Travesura realizada. xD${END}"
+        echo "${Yellow}Travesura realizada. xD${Color_Off}"
 else
-        echo -e "${red}Eres r00t?${END}"
+        echo -e "${Red}Eres r00t?${Color_Off}"
         echo "por favor use: ${0} como grupo de usuario root"
 fi

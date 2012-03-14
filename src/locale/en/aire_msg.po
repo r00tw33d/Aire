@@ -1,0 +1,32 @@
+# English Translation
+# Copyright (C) 2010 - Aire (tm)
+# Created by DiaPO - V 0.01
+# Developed by fitorec -  <chanerec@gmail.com> 2010.
+# Filename: src/locate/en/aire_msg.po
+# Last-Modifield:
+
+msgid "Validando dependencias"
+msgstr "Validding dependences"
+
+msgid "Revisando targeta"
+msgstr "Check interface"
+
+msgid "Levantando targeta de red"
+msgstr "Uploading network interface"
+
+msgid "Error desconocido al ejecutar:"
+msgstr "Unkwon Fail on runing:"
+
+msgid "Seleccione un objetivo"
+msgstr "Select a objetive"
+
+msgid "Calidad:"
+msgstr "Quality:"
+
+msgid "Canal:"
+msgstr "Channel:"
+
+msgid "Inserte el número de un objetivo"
+msgstr "Insert the number of a objetive"
+
+##end file
