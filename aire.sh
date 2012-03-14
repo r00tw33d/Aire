@@ -53,25 +53,30 @@ function probe_interface {
 	fi
 }
 
-
-function select_interface {
-        echo Buscando alternativas...
-        INTERFACES=`iwconfig 2>&1 | grep 802.11 | wc -l`
-        if [ "$INTERFACES" -gt 1 ]; then
-                echo -e "${white}Especifike un número de la lista:"
-                iwconfig 2>&1 | grep 802.11 | awk '{print "\t"NR ") " $1}'
-                echo -e "${END}"
-                read IFACEID
-		REALIFACE=`iwconfig 2>&1 | grep 802.11 | awk '{print $1}' | head -n$IFACEID | tail -n1`
-                if [ -z "$REALIFACE" ]; then
-                        exit
-		else
-			INTERFAZ=$REALIFACE
-                fi
-        else
-                INTERFAZ=`iwconfig 2>&1 | grep 802.11 | awk '{print $1}'`
-        fi
+############################################################
+# Selecciona una interfaz de red que soporte 802.11,
+# de haber mas de una, las muestras en un menu  como opciones
+#
+# @link [URL de mayor infor]
+############################################################
+function select_interface() {
+	local NUM_INTERFACES=`iwconfig 2>&1 | grep 802.11 | wc -l`
+	if [ "$NUM_INTERFACES" -gt 1 ]; then
+		echo -e "${white}Especifike un número de la lista:"
+		select INTERFAZ in `iwconfig 2>&1 | grep 802.11 | grep -oE "^\w*"`; do
+			if [ $INTERFAZ ]; then
+				break;
+			else
+				clear
+				echo -e "${red}Especifike una interfaz valida:${END}${white}"
+			fi
+		done #end select
+	else
+		INTERFAZ=`iwconfig 2>&1 | grep 802.11 | grep -oE "^\w*" | head -1`
+	fi
+	echo -e ${END}
 }
+
 ############################# aqui empieza la secuencia del guion ########################
 #valiaciones previas.
 validar_dependencias
