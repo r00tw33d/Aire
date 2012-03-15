@@ -6,7 +6,7 @@
 # @link http://r00tw33d.github.com/Aire
 
 ############################################################
-# Devuelve el mensaje traducido, a partir de las variables
+# Imprime un mensaje traducido, a partir de las variables
 # previamente configuradas:  AIRE_BASE_PATH y AIRE_LANG
 #
 # @argumen $1 Printf format

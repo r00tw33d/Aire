@@ -8,6 +8,9 @@
 msgid "Validando dependencias"
 msgstr "Validding dependences"
 
+msgid "Especifike un número de la lista:"
+msgstr "Enter a number from the list:"
+
 msgid "Revisando targeta"
 msgstr "Check interface"
 

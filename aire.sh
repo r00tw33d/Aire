@@ -78,7 +78,7 @@ function probe_interface {
 # Configurando MAC address, el argumento recibido($1),
 # A partir de este configuramos la mac
 #
-# @argumen $1 descripción del argumento 1.
+# @argumen $1 puede ser una Mac addres, --dont-fake ó ,''
 # @return tipo descripcion de lo que regresa
 # @link http://r00tw33d.github.com/Aire
 ############################################################
