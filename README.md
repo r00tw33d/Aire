@@ -5,22 +5,43 @@ _Aire_ es un conjunto de scripts elaborado para facilitar la auditoria de redes 
 Su fin es `semi-automatizar` el crackeo de **WEP** keys (únicamente **WEP**, no **WPA**) con una poca interveción del usuario.
 Fue desarrollado con fines puramente educativos ;)
 
-#Advertencias y recomendaciones:
+
+Advertencias y recomendaciones:
+------------------------------------------------------------------------------------------
 
  - Lxs colaboradorxs de este proyecto no se hacen responsables por el mal uso ke se le pueda dar.
  - Este proyecto está echo con fines educativos. Por favor, se conciente si lo utilizas ;) **¡Robar Wi-Fi es ilegal!**.
  - Come frutas y verduras!.
 
-#Uso e intalación:
+Uso e intalación:
+------------------------------------------------------------------------------------------
 
 ###Requerimientos:
 
  - macchanger
  - aircrack-ng
 
-`sudo apt-get install macchanger aircrack-ng`
+Puede descargar las dependencias con el siguiente comando:
 
-#Desarrolladores
+	sudo apt-get install macchanger aircrack-ng
+
+Instalación
+------------------------------------------------------------------------------------------
+Puede instalar el aire con el siguiente comando:
+
+	wget -O - https://raw.github.com/r00tw33d/Aire/master/install.sh | bash
+
+Uso:
+------------------------------------------------------------------------------------------
+la forma tipica de ejecutar el aire es:
+	aire <Interfaz> <MAC-Address>
+
+Sin embargo la interfaz la puede seleccionar dinamicamente y la mac address la puede asignar automaticamente:
+
+	aire
+
+Desarrolladores
+------------------------------------------------------------------------------------------
 
 Para unirte solo ingresa al _github_ realiza un fork y empuja solicitud de cambios, este [r00tw33d](https://github.com/r00tw33d) se encargara de revisarlas.
 
