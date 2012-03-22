@@ -14,8 +14,8 @@ function installAire() {
 	fi
 	echo "ruta de instalacion ${aire_dst}";
 	#descargamos el aire en el directorio temporal
-	wget https://github.com/r00tw33d/Aire/tarball/master -O /tmp/r00tw33d-aire.tar.gz
-	tar xvfz /tmp/r00tw33d-aire.tar.gz -C ${aire_dst}
+	wget https://github.com/r00tw33d/Aire/tarball/master -O /tmp/aire.tar.gz
+	tar xvfz /tmp/aire.tar.gz -C ${aire_dst}
 
 	cat ${HOME}/.bashrc | grep -qE 'alias\s+aire='
 
@@ -26,8 +26,8 @@ function installAire() {
 }
 
 
-wget https://github.com/r00tw33d/Aire/tarball/master -O r00tw33d-aire.tar.gz
-tar xvfz /tmp/r00tw33d-aire.tar.gz -C ./aire/
+wget https://github.com/r00tw33d/Aire/tarball/master -O aire.tar.gz
+tar xvfz aire.tar.gz -C ./aire/
 echo 'pendiente por favor ejecute: ';
 echo 'sudo ./aire/aire.sh';
 exit 0;
